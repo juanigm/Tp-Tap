@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP TAP</title>
+</head>
+<body>
+    <form>
+        <input type="text" name="userid" placeholder="Userid">
+        <input type="text" name="name" placeholder="Name">
+        <button type="submit">
+            Send
+        </button>
+    </form>
+    <table>
+        <thead>
+            <tr>
+                <td>Userid</td>
+                <td>Name</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.0 }}</td>
+                <td>{{ user.1 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
