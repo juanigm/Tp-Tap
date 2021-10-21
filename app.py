@@ -1,7 +1,10 @@
 from flask import Flask, render_template, request
 from flask_mysqldb import MySQL
+from flask_socketio import SocketIO, send
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret'
+socketio = SocketIO(app)
 
 #Conection from bd
 app.config['MYSQL_HOST'] = 'localhost'
@@ -21,8 +24,12 @@ def users():
     print(data)
     return render_template('index.html', users = data)
 
+@socketio.on('message')
+def handleMessage(msg):
+    print("Message: " + msg)
 
 #Server
 if __name__ == '__main__':
-    app.run(port = 3000, debug = True) #Debug = true is for restart the server automatically
+    socketio.run(app)
+    #app.run(port = 3000, debug = True) #Debug = true is for restart the server automatically
 
