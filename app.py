@@ -24,9 +24,20 @@ def users():
     print(data)
     return render_template('index.html', users = data)
 
+@app.route('/chat', methods=['POST'])
+def chats():
+    if request.method == 'POST':
+        myMessage = request.form['myMessage']
+        print(myMessage)
+       # cursor = mysql.connection.cursor()
+        #cursor.execute('INSERT INTO mensaje (mensaje) VALUES (%s)', (myMessage))
+        #mysql.connection.commit()
+    return render_template('chats.html')
+
 @socketio.on('message')
 def handleMessage(msg):
     print("Message: " + msg)
+    send(msg, broadcast = True)
 
 #Server
 if __name__ == '__main__':
