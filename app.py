@@ -9,7 +9,7 @@ socketio = SocketIO(app)
 #Conection from bd
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'Loreto18'
+app.config['MYSQL_PASSWORD'] = 'Ignacio321'
 app.config['MYSQL_DB'] = 'tp-tap'
 
 mysql = MySQL(app)
@@ -17,8 +17,12 @@ mysql = MySQL(app)
 
 #Routes
 
-@app.route('/login', methods=['POST','GET'])
-def users():
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/chat', methods=['POST','GET'])
+def login():
     data = ''
     if(request.method == 'POST'):
         userId = request.form['userid']
@@ -28,19 +32,21 @@ def users():
         data = cursor.fetchall()
         print('DATA: '+str(data))
     if(data):
-        return redirect(url_for('chats')) 
+        return render_template('chats.html')
     else:
         return render_template('index.html')
 
-@app.route('/chat')
-def chats():
-   # if request.method == 'POST':
-       # myMessage = request.form['myMessage']
-     #   print(myMessage)
-       # cursor = mysql.connection.cursor()
-        #cursor.execute('INSERT INTO mensaje (mensaje) VALUES (%s)', (myMessage))
-        #mysql.connection.commit()
-    return render_template('chats.html')
+""" @app.route('/chat', methods=['GET', 'POST'])
+def chat():
+    print("Hola")
+    #if request.method == 'POST':
+    #    myMessage = request.form['mensaje']
+    #    print(myMessage)
+    #    cursor = mysql.connection.cursor()
+    #    cursor.execute('INSERT INTO mensaje (mensaje, fecha, idSala, userId) VALUES (%s, %s, %s, %s)', (myMessage, "2/11/21", "Sala123", "Maxi123"))
+    #    mysql.connection.commit()
+    #
+    return redirect """
 
 """ def login(): """
 
