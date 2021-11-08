@@ -1,10 +1,16 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_mysqldb import MySQL
-from flask_socketio import SocketIO, send
+from flask_socketio import SocketIO, join_room, leave_room, emit
+from flask_session import Session
 
 app = Flask(__name__)
+app.debug = True
 app.config['SECRET_KEY'] = 'secret'
-socketio = SocketIO(app)
+app.config['SESSION_TYPE'] = 'filesystem'
+
+Session(app)
+
+socketio = SocketIO(app, manage_session=False)
 
 #Conection from bd
 app.config['MYSQL_HOST'] = 'localhost'
@@ -21,20 +27,51 @@ mysql = MySQL(app)
 def index():
     return render_template('index.html')
 
-@app.route('/chat', methods=['POST','GET'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    data = ''
     if(request.method == 'POST'):
-        userId = request.form['userid']
+        userid = request.form['userid']
         password = request.form['password']
         cursor = mysql.connection.cursor()
-        cursor.execute('SELECT userId, password FROM usuario WHERE userid = %s AND password = %s', (userId,password))
+        cursor.execute('SELECT userId, password FROM usuario WHERE userid = %s AND password = %s', (userid,password))
         data = cursor.fetchall()
-        print('DATA: '+str(data))
+        #print('DATA: '+str(data))
     if(data):
-        return render_template('chats.html')
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT * FROM sala')
+        data = cursor.fetchall()
+        #print(data)
+        return render_template('salas.html', salas = data)
     else:
-        return render_template('index.html')
+        return redirect(url_for('index'))
+
+@app.route('/chat', methods=['GET','POST'])
+def chat():
+    data = ''
+    if(request.method == 'POST'):
+        userid = request.form['userid']
+        room = request.form['room']
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT * FROM sala WHERE nombreSala LIKE %s', [room])
+        data = cursor.fetchall()
+        print(data)
+        
+        if(data):
+            session['userid'] = userid  
+            session['room'] = room
+            return render_template('chat.html', session = session)
+        else:
+            return redirect(url_for('login'))
+
+        
+    else:
+        if(session.get('userid') is not None):
+            return render_template('chat.html', session = session)
+        else:
+            return redirect(url_for('login'))
+
+
 
 """ @app.route('/chat', methods=['GET', 'POST'])
 def chat():
@@ -51,10 +88,27 @@ def chat():
 """ def login(): """
 
 
-@socketio.on('message')
-def handleMessage(msg):
-    print("Message: " + msg)
-    send(msg, broadcast = True)
+#Socket
+@socketio.on('join', namespace='/chat')
+def join(message):
+    room = session.get('room')
+    join_room(room)
+    emit('status', {'msg':  session.get('userid') + ' Entró en la sala.'}, room=room)
+
+
+@socketio.on('text', namespace='/chat')
+def text(message):
+    room = session.get('room')
+    emit('message', {'msg': session.get('userid') + ' : ' + message['msg']}, room=room)
+
+
+@socketio.on('left', namespace='/chat')
+def left(message):
+    room = session.get('room')
+    userid = session.get('userid')
+    leave_room(room)
+    session.clear()
+    emit('status', {'msg': userid + ' salió de la sala.'}, room=room)
 
 #Server
 if __name__ == '__main__':
