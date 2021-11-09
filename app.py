@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from flask_mysqldb import MySQL
 from flask_socketio import SocketIO, join_room, leave_room, emit
 from flask_session import Session
+from datetime import datetime
 
 app = Flask(__name__)
 app.debug = True
@@ -32,6 +33,7 @@ def login():
     if(request.method == 'POST'):
         userid = request.form['userid']
         password = request.form['password']
+        session['userid'] = userid
         cursor = mysql.connection.cursor()
         cursor.execute('SELECT userId, password FROM usuario WHERE userid = %s AND password = %s', (userid,password))
         data = cursor.fetchall()
@@ -49,17 +51,14 @@ def login():
 def chat():
     data = ''
     if(request.method == 'POST'):
-        userid = request.form['userid']
         room = request.form['room']
-
+        session['room'] = room
         cursor = mysql.connection.cursor()
-        cursor.execute('SELECT * FROM sala WHERE nombreSala LIKE %s', [room])
+        cursor.execute('SELECT * FROM sala WHERE idSala LIKE %s', [room])
         data = cursor.fetchall()
         print(data)
         
         if(data):
-            session['userid'] = userid  
-            session['room'] = room
             return render_template('chat.html', session = session)
         else:
             return redirect(url_for('login'))
@@ -91,21 +90,39 @@ def chat():
 #Socket
 @socketio.on('join', namespace='/chat')
 def join(message):
+    mensaje = ''
+    user = ''
     room = session.get('room')
     join_room(room)
     emit('status', {'msg':  session.get('userid') + ' Entró en la sala.'}, room=room)
-
+    """cursor = mysql.connection.cursor()
+    cursor.execute('SELECT mensaje, userId FROM mensaje WHERE idSala LIKE %s', [room])
+    data = cursor.fetchall()
+    print('DATA: '+str(data))
+    for a in data:
+        print(a[0])
+        emit('status', {'msg': a[1] + ': ' + a[0]}, room=room)"""
+        
 
 @socketio.on('text', namespace='/chat')
 def text(message):
+    
+    userid = session.get('userid')
     room = session.get('room')
-    emit('message', {'msg': session.get('userid') + ' : ' + message['msg']}, room=room)
+    message1 = message['msg']
+    date = datetime.today()
+    emit('message', {'msg': session.get('userid') + ': ' + message['msg']}, room=room)
+    cursor = mysql.connection.cursor()
+    cursor.execute('INSERT INTO mensaje (mensaje, fecha, idSala, userId) VALUES (%s, %s, %s, %s)', (message1, date, room, userid))
+    mysql.connection.commit()
 
 
 @socketio.on('left', namespace='/chat')
 def left(message):
     room = session.get('room')
     userid = session.get('userid')
+    print(session.get('room'))
+    print(session['userid'])
     leave_room(room)
     session.clear()
     emit('status', {'msg': userid + ' salió de la sala.'}, room=room)
