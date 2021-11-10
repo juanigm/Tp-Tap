@@ -3,7 +3,6 @@
 <html lang="en">
   <head>
     <title>Chat</title>
-    <!--Link to CSS -->
     <link href="../static/bootstrap.min.css" rel="stylesheet" />
     <link href="../static/style.css" rel="stylesheet" />
 
@@ -38,7 +37,6 @@
         function leave_room() {
             socket.emit('left', {}, function() {
                 socket.disconnect();
-                // go back to the login page
                 window.location.href = "{{ url_for('index') }}";
             });
         }

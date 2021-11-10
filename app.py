@@ -16,7 +16,7 @@ socketio = SocketIO(app, manage_session=False)
 #Conection from bd
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'Ignacio321'
+app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'tp-tap'
 
 mysql = MySQL(app)
