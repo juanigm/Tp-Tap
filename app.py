@@ -16,7 +16,7 @@ socketio = SocketIO(app, manage_session=False)
 #Conection from bd
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
+app.config['MYSQL_PASSWORD'] = 'Loreto18'
 app.config['MYSQL_DB'] = 'tp-tap'
 
 mysql = MySQL(app)
@@ -95,13 +95,13 @@ def join(message):
     room = session.get('room')
     join_room(room)
     emit('status', {'msg':  session.get('userid') + ' Entró en la sala.'}, room=room)
-    """cursor = mysql.connection.cursor()
+    cursor = mysql.connection.cursor()
     cursor.execute('SELECT mensaje, userId FROM mensaje WHERE idSala LIKE %s', [room])
     data = cursor.fetchall()
     print('DATA: '+str(data))
     for a in data:
         print(a[0])
-        emit('status', {'msg': a[1] + ': ' + a[0]}, room=room)"""
+        emit('status', {'msg': a[1] + ': ' + a[0]}, room=request.sid)
         
 
 @socketio.on('text', namespace='/chat')

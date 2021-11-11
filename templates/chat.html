@@ -22,23 +22,23 @@
             });
             socket.on('status', function(data) {
                 $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
-                $('#chat').scrollTop($('#chat')[0].scrollHeight);
+                //$('#chat').scrollTop($('#chat')[0].scrollHeight);
             });
-            socket.on('message', function(data) {
+             socket.on('message', function(data) {
                 $('#chat').val($('#chat').val() + data.msg + '\n');
-                $('#chat').scrollTop($('#chat')[0].scrollHeight);
-            });
+                //$('#chat').scrollTop($('#chat')[0].scrollHeight);
+            }); 
             $('#send').click(function(e) {
                     text = $('#text').val();
                     $('#text').val('');
                     socket.emit('text', {msg: text});
             });
         });
-        function leave_room() {
+         function leave_room() {
             socket.emit('left', {}, function() {
                 socket.disconnect();
                 window.location.href = "{{ url_for('index') }}";
-            });
+            }); 
         }
     </script>
   </head>
